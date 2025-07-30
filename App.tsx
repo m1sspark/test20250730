@@ -1,134 +1,87 @@
+
 import React, { useState, useCallback } from 'react';
-import { generateImage } from './services/geminiService';
-import { LoadingSpinner } from './components/LoadingSpinner';
-import { SparklesIcon, PhotoIcon, PencilIcon } from './components/Icons';
+import { GameBoyScreen } from './components/GameBoyScreen';
+import { PraiseButton } from './components/PraiseButton';
+import { PRAISE_MESSAGES } from './constants/praiseMessages';
+
+const DPad: React.FC = () => (
+    <div className="relative w-24 h-24 select-none">
+        <div className="absolute w-8 h-24 top-0 left-8 bg-gray-800 rounded-md shadow-md"></div>
+        <div className="absolute w-24 h-8 top-8 left-0 bg-gray-800 rounded-md shadow-md"></div>
+        <div className="absolute w-10 h-10 top-7 left-7 border-4 border-gray-800 rounded-full"></div>
+    </div>
+);
+
+const SystemButtons: React.FC = () => (
+    <div className="flex justify-center items-center space-x-6 mt-8 -rotate-12">
+        <div className="flex flex-col items-center">
+            <div className="w-12 h-5 bg-gray-700 rounded-full shadow-inner"></div>
+            <p className="text-xs font-bold text-gray-700 mt-1 select-none">SELECT</p>
+        </div>
+        <div className="flex flex-col items-center">
+            <div className="w-12 h-5 bg-gray-700 rounded-full shadow-inner"></div>
+            <p className="text-xs font-bold text-gray-700 mt-1 select-none">START</p>
+        </div>
+    </div>
+);
 
 const App: React.FC = () => {
-  const [inputText, setInputText] = useState<string>('');
-  const [transformedText, setTransformedText] = useState<string>('');
-  const [imageUrl, setImageUrl] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+    const [currentPraise, setCurrentPraise] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleTransform = useCallback(async () => {
-    if (!inputText.trim()) {
-      setError('Please enter some text to transform.');
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    setImageUrl('');
-    setTransformedText('');
+    const handlePickPraise = useCallback(() => {
+        if (isLoading) return;
 
-    try {
-      const generatedImageUrl = await generateImage(inputText);
-      setImageUrl(generatedImageUrl);
-      setTransformedText(inputText);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to generate image. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [inputText]);
+        setIsLoading(true);
+        setCurrentPraise(null);
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <div className="w-full max-w-4xl mx-auto flex-grow p-4 sm:p-6 lg:p-8">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 tracking-tight">
-            디지털 칠판
-          </h1>
-          <p className="mt-2 text-lg text-gray-600">
-            텍스트를 그림과 손글씨로 변환하여 생동감 있는 학습 자료를 만들어 보세요.
-          </p>
-        </header>
+        setTimeout(() => {
+            const randomIndex = Math.floor(Math.random() * PRAISE_MESSAGES.length);
+            setCurrentPraise(PRAISE_MESSAGES[randomIndex]);
+            setIsLoading(false);
+        }, 2500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoading]);
 
-        <main className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-          <div className="flex flex-col gap-6">
-            <div className="relative">
-               <PencilIcon className="absolute top-3 left-3 w-6 h-6 text-gray-400" />
-              <textarea
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="여기에 내용을 입력하세요. 예: '우주를 여행하는 용감한 고양이'"
-                className="w-full h-32 p-4 pl-11 text-base text-gray-700 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 resize-none"
-                rows={4}
-              />
-            </div>
-            <button
-              onClick={handleTransform}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              {isLoading ? (
-                <>
-                  <LoadingSpinner />
-                  <span>변환 중...</span>
-                </>
-              ) : (
-                <>
-                  <SparklesIcon className="w-5 h-5" />
-                  <span>변환하기</span>
-                </>
-              )}
-            </button>
-          </div>
-          
-          {error && <div className="mt-6 text-center text-red-600 bg-red-100 p-3 rounded-lg">{error}</div>}
+    return (
+        <div className="bg-gray-800 min-h-screen flex items-center justify-center p-4 font-sans">
+            <main className="w-full max-w-sm bg-stone-300 rounded-2xl rounded-b-[4rem] p-4 shadow-2xl border-2 border-stone-400">
+                <GameBoyScreen message={currentPraise} isLoading={isLoading} />
+                
+                <div className="relative px-4 pt-8 pb-4">
+                    <div className="absolute -top-4 right-6">
+                        <h1 className="text-4xl font-extrabold text-blue-700" style={{ fontFamily: 'monospace', textShadow: "2px 2px #a0a0a0" }}>
+                            PraiseBoy
+                        </h1>
+                        <p className="text-xs text-blue-900/80 font-bold text-right -mt-1">DIGITAL</p>
+                    </div>
 
-          <div className="mt-8 pt-8 border-t-2 border-dashed border-gray-200">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center text-gray-500">
-                <PhotoIcon className="w-16 h-16 text-gray-300 animate-pulse mb-4"/>
-                <p className="text-lg">결과를 생성하고 있습니다...</p>
-              </div>
-            ) : (
-              <>
-                { !imageUrl && !transformedText && (
-                   <div className="text-center text-gray-400 p-8 rounded-lg bg-gray-50">
-                     <PhotoIcon className="w-16 h-16 mx-auto mb-4"/>
-                     <h3 className="text-xl font-semibold">변환 결과</h3>
-                     <p>결과물이 여기에 표시됩니다.</p>
-                   </div>
-                )}
-                { (imageUrl || transformedText) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">관련 이미지</h3>
-                      <div className="bg-gray-800 rounded-lg shadow-lg p-6 min-h-[300px] flex items-center justify-center relative aspect-square">
-                        {imageUrl ? (
-                          <img src={imageUrl} alt="Generated from text" className="rounded-md object-cover w-full h-full"/>
-                        ) : (
-                           <div className="text-center text-gray-400">
-                             <PhotoIcon className="w-12 h-12 mx-auto mb-2"/>
-                             <p>이미지를 불러오지 못했습니다.</p>
+                    <div className="flex justify-between items-center mt-12">
+                        <div className="w-1/3 flex justify-center">
+                            <DPad />
+                        </div>
+
+                        <div className="w-2/3 flex justify-end items-center space-x-6">
+                           <PraiseButton onClick={handlePickPraise} disabled={isLoading} />
+                           <div className="self-end mb-2">
+                            <div className="w-16 h-16 bg-rose-800 rounded-full shadow-lg flex items-center justify-center">
+                               <span className="text-white text-2xl font-bold font-sans select-none">B</span>
+                            </div>
                            </div>
-                        )}
-                      </div>
+                        </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">손글씨 뷰</h3>
-                      <div className="bg-green-800/80 p-6 rounded-lg shadow-lg min-h-[300px] flex items-center justify-center aspect-square" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23a0aec0\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'}}>
-                        {transformedText && (
-                          <p className="font-handwriting font-bold text-5xl sm:text-6xl text-white leading-relaxed text-center break-words">
-                            {transformedText}
-                          </p>
-                        )}
-                      </div>
+                    
+                    <div className="flex justify-center items-center">
+                        <SystemButtons />
                     </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </main>
-      </div>
-      <footer className="w-full text-center py-4">
-        <p className="text-sm text-gray-500">© 2025 과학교사 박정임</p>
-      </footer>
-    </div>
-  );
+
+                    <div className="text-center mt-8 text-sm font-mono text-gray-600">
+                        <p>오늘의 칭찬 주인공 뽑기</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
 };
 
 export default App;
