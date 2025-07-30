@@ -1,0 +1,5 @@
+{
+  "name": "Digital Chalkboard",
+  "description": "An application for teachers to transform text into a visually engaging format with a relevant image and handwriting-style font, creating a digital chalkboard experience.",
+  "requestFramePermissions": []
+}
